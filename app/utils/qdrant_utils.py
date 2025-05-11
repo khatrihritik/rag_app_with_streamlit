@@ -29,16 +29,16 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 # Should be HTTP URL to Qdrant server
 QDRANT_DB_URL = os.getenv("qdrant_db_path", "http://localhost:6333")
 COLLECTION_NAME = os.getenv("COLLECTION_NAME", "rag_demo_collection")
-
+QDRANT_DB_KEY = os.getenv("QDRANT_DB_KEY", None)
 class DocumentIndexer:
-    def __init__(self, qdrant_url: str = QDRANT_DB_URL):
+    def __init__(self, qdrant_url: str = QDRANT_DB_URL, qdrant_api_key:str = QDRANT_DB_KEY):
         # Embedding functions
         self.dense_embedding = OpenAIEmbeddings(model="text-embedding-3-large", api_key=OPENAI_API_KEY)
         self.sparse_embedding = FastEmbedSparse(model_name="Qdrant/bm25")
 
         # Connect in server mode (no file locks)
-        self.client = AsyncQdrantClient(url=qdrant_url)
-        self.sync_client = QdrantClient(url=qdrant_url)
+        # self.client = AsyncQdrantClient(url=qdrant_url)
+        self.sync_client = QdrantClient(url=qdrant_url, api_key=qdrant_api_key)
         self.vectors = {}
 
         # Ensure the collection exists
