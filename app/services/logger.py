@@ -11,7 +11,7 @@ os.makedirs(log_subdirectory, exist_ok=True)
 log_file_path = os.path.join(log_subdirectory, 'app.log')
 
 logging.basicConfig(
-    level=logging.DEBUG,  # Set the default logging level (e.g., DEBUG, INFO, WARNING, ERROR, CRITICAL)
+    level=logging.INFO,  # Set the default logging level (e.g., DEBUG, INFO, WARNING, ERROR, CRITICAL)
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',  # Log message format
     handlers=[
         logging.FileHandler(log_file_path),  # Output logs to the log file
