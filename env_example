@@ -1,0 +1,9 @@
+OPENAI_API_KEY=<your openai key>
+qdrant_db_path=<path to quadrant db eg: http://localhost:6333/ >
+llm_provider=openai
+model=gpt-4o-mini
+LANGSMITH_TRACING=true
+LANGSMITH_ENDPOINT=https://api.smith.langchain.com
+LANGSMITH_API_KEY=<API key for the langsmith>
+LANGSMITH_PROJECT=<name of langsmith project >
+COLLECTION_NAME=<name of qdrant collection>
