@@ -12,6 +12,8 @@ from langchain_qdrant import (
     RetrievalMode,
 )
 from qdrant_client import QdrantClient, AsyncQdrantClient
+from qdrant_client.models import PayloadSchemaType
+
 from qdrant_client.http.models import (
     Distance,
     VectorParams,
@@ -55,7 +57,7 @@ class DocumentIndexer:
                     "dense": VectorParams(size=3072, distance=Distance.COSINE)
                 },
                 sparse_vectors_config={
-                    "sparse": SparseVectorParams(index=SparseIndexParams(on_disk=False))
+                    "sparse-vec": SparseVectorParams(index=SparseIndexParams(on_disk=False))
                 },
             )
 
@@ -70,7 +72,7 @@ class DocumentIndexer:
         else:
             logger.info(f"Collection '{COLLECTION_NAME}' already exists")
 
-    def _get_vector_store(self, mode: str = "dense"):
+    def _get_vector_store(self, mode: str = "hybrid"):
         # Cache one QdrantVectorStore per mode
         if mode not in self.vectors:
             kwargs = {
@@ -82,7 +84,8 @@ class DocumentIndexer:
             }
             if mode in ("sparse", "hybrid"):
                 kwargs["sparse_embedding"] = self.sparse_embedding
-                kwargs["sparse_vector_name"] = "sparse"
+                kwargs["sparse_vector_name"] = "sparse-vec"
+                        
             self.vectors[mode] = QdrantVectorStore(**kwargs)
         return self.vectors[mode]
 
@@ -115,7 +118,7 @@ class DocumentIndexer:
                 logger.info(f"Using chunk size: {chunk_size}")
 
             splitter = RecursiveCharacterTextSplitter(
-                separators=["\n\n", "\n", ","],
+                separators=["\n\n", "\n", ".", ","],
                 chunk_size=chunk_size,
                 chunk_overlap=200,
             )
@@ -123,7 +126,7 @@ class DocumentIndexer:
             ids = [str(uuid4()) for _ in docs]
 
             store = self._get_vector_store(mode="hybrid")
-            await store.aadd_documents(documents=docs, ids=ids)
+            await store.aadd_documents(documents=docs, ids=ids, batch_size=5)
 
             logger.info("Successfully indexed documents in QdrantDB")
             return True
@@ -134,7 +137,7 @@ class DocumentIndexer:
     async def get_retriever(
         self,
         top_k: int,
-        mode: str = "dense",
+        mode: str = "hybrid",
         score_threshold: float = None,
         metadata_filter: Filter = None,
     ):
