@@ -44,6 +44,7 @@ class DocumentIndexer:
         # Ensure the collection exists
         self._ensure_collection()
 
+
     def _ensure_collection(self):
         existing = self.sync_client.get_collections().collections
         if COLLECTION_NAME not in [c.name for c in existing]:
@@ -57,6 +58,15 @@ class DocumentIndexer:
                     "sparse": SparseVectorParams(index=SparseIndexParams(on_disk=False))
                 },
             )
+
+            # 🔧 Create payload indexes for metadata fields
+            for field in ["metadata.username", "metadata.file_name", "metadata.doc_type"]:
+                logger.info(f"Creating payload index on '{field}'")
+                self.sync_client.create_payload_index(
+                    collection_name=COLLECTION_NAME,
+                    field_name=field,
+                    field_schema=PayloadSchemaType.KEYWORD
+                )
         else:
             logger.info(f"Collection '{COLLECTION_NAME}' already exists")
 
